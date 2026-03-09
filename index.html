@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🐟 Aquarium Designer</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://esm.sh/three@0.172.0",
+      "three/addons/": "https://esm.sh/three@0.172.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="logo">🐠 Aquarium Designer</span>
+    </div>
+    <div class="topbar-right">
+      <button id="btn-export" class="btn btn-primary">📷 Export PNG</button>
+      <button id="btn-share" class="btn btn-secondary">🔗 Share</button>
+    </div>
+  </header>
+
+  <!-- Main Layout -->
+  <div class="app-layout">
+    <!-- Left Panel: Tank & Environment Controls -->
+    <aside class="panel panel-left">
+      <section class="panel-section">
+        <h3 class="panel-title">Tank Shape</h3>
+        <div class="shape-grid">
+          <label class="shape-btn active" data-shape="rectangle">
+            <input type="radio" name="shape" value="rectangle" checked />
+            <div class="shape-icon shape-rect"></div>
+            <span>Rectangle</span>
+          </label>
+          <label class="shape-btn" data-shape="cylinder">
+            <input type="radio" name="shape" value="cylinder" />
+            <div class="shape-icon shape-cyl"></div>
+            <span>Cylinder</span>
+          </label>
+          <label class="shape-btn" data-shape="hexagon">
+            <input type="radio" name="shape" value="hexagon" />
+            <div class="shape-icon shape-hex"></div>
+            <span>Hexagon</span>
+          </label>
+          <label class="shape-btn" data-shape="bowfront">
+            <input type="radio" name="shape" value="bowfront" />
+            <div class="shape-icon shape-bow"></div>
+            <span>Bow-Front</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="panel-section">
+        <h3 class="panel-title">Water Style</h3>
+        <div class="color-options" id="water-presets">
+          <button class="color-chip active" data-bg="#001a33" data-fog="#003366" data-water="#004488" title="Ocean Blue" style="background:linear-gradient(135deg,#001a33,#004488)">Ocean</button>
+          <button class="color-chip" data-bg="#00264d" data-fog="#0055aa" data-water="#0066cc" title="Tropical" style="background:linear-gradient(135deg,#00264d,#0066cc)">Tropical</button>
+          <button class="color-chip" data-bg="#000a1a" data-fog="#001133" data-water="#002255" title="Deep Sea" style="background:linear-gradient(135deg,#000a1a,#002255)">Deep Sea</button>
+          <button class="color-chip" data-bg="#0d2b1a" data-fog="#1a5c35" data-water="#2a7a50" title="Freshwater" style="background:linear-gradient(135deg,#0d2b1a,#2a7a50)">Fresh</button>
+          <button class="color-chip" data-bg="#1a1035" data-fog="#4a1060" data-water="#5a2070" title="Sunset" style="background:linear-gradient(135deg,#1a1035,#5a2070)">Sunset</button>
+        </div>
+      </section>
+
+      <section class="panel-section">
+        <h3 class="panel-title">Substrate</h3>
+        <div class="color-options" id="substrate-presets">
+          <button class="color-chip active" data-substrate="#c4a882" title="Sandy" style="background:#c4a882">Sand</button>
+          <button class="color-chip" data-substrate="#888888" title="Gravel" style="background:#888888">Gravel</button>
+          <button class="color-chip" data-substrate="#f5f5f5" title="White Sand" style="background:#f5f5f5">White</button>
+          <button class="color-chip" data-substrate="#1a1a1a" title="Dark Substrate" style="background:#1a1a1a;color:#fff">Dark</button>
+          <button class="color-chip" data-substrate="#5c3d1a" title="Soil" style="background:#5c3d1a">Soil</button>
+        </div>
+      </section>
+
+      <section class="panel-section">
+        <h3 class="panel-title">Effects</h3>
+        <label class="toggle-row">
+          <span>Bubbles</span>
+          <input type="checkbox" id="toggle-bubbles" checked />
+          <span class="toggle-slider"></span>
+        </label>
+        <label class="toggle-row">
+          <span>Caustics</span>
+          <input type="checkbox" id="toggle-caustics" checked />
+          <span class="toggle-slider"></span>
+        </label>
+        <label class="toggle-row">
+          <span>Fog</span>
+          <input type="checkbox" id="toggle-fog" checked />
+          <span class="toggle-slider"></span>
+        </label>
+      </section>
+    </aside>
+
+    <!-- Canvas Area -->
+    <main class="canvas-area">
+      <div id="canvas-container">
+        <canvas id="aquarium-canvas"></canvas>
+        <div id="canvas-overlay">
+          <div id="placement-hint" class="hint hidden">Click inside the tank to place item</div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Right Panel: Items -->
+    <aside class="panel panel-right">
+      <div class="tab-bar">
+        <button class="tab active" data-tab="fish">🐟 Fish</button>
+        <button class="tab" data-tab="coral">🪸 Coral</button>
+        <button class="tab" data-tab="decor">🏰 Decor</button>
+      </div>
+
+      <!-- Fish Tab -->
+      <div class="tab-content active" id="tab-fish">
+        <div class="items-grid">
+          <button class="item-card" data-type="clownfish" data-category="fish">
+            <div class="item-preview" style="background:linear-gradient(135deg,#ff6600,#ff8800)">🐠</div>
+            <span>Clownfish</span>
+          </button>
+          <button class="item-card" data-type="bluetang" data-category="fish">
+            <div class="item-preview" style="background:linear-gradient(135deg,#1166cc,#2288ff)">🐟</div>
+            <span>Blue Tang</span>
+          </button>
+          <button class="item-card" data-type="angelfish" data-category="fish">
+            <div class="item-preview" style="background:linear-gradient(135deg,#aaaaaa,#dddddd)">🐡</div>
+            <span>Angelfish</span>
+          </button>
+          <button class="item-card" data-type="goldfish" data-category="fish">
+            <div class="item-preview" style="background:linear-gradient(135deg,#ffaa00,#ffcc44)">🐠</div>
+            <span>Goldfish</span>
+          </button>
+          <button class="item-card" data-type="shark" data-category="fish">
+            <div class="item-preview" style="background:linear-gradient(135deg,#666677,#9999aa)">🦈</div>
+            <span>Shark</span>
+          </button>
+          <button class="item-card" data-type="guppy" data-category="fish">
+            <div class="item-preview" style="background:linear-gradient(135deg,#cc44aa,#ff88cc)">🐟</div>
+            <span>Guppy</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Coral Tab -->
+      <div class="tab-content" id="tab-coral">
+        <div class="items-grid">
+          <button class="item-card" data-type="braincoral" data-category="coral">
+            <div class="item-preview" style="background:linear-gradient(135deg,#cc8844,#eeaa66)">🪸</div>
+            <span>Brain Coral</span>
+          </button>
+          <button class="item-card" data-type="staghorn" data-category="coral">
+            <div class="item-preview" style="background:linear-gradient(135deg,#ffaaaa,#ffcccc)">🌿</div>
+            <span>Staghorn</span>
+          </button>
+          <button class="item-card" data-type="tubecoral" data-category="coral">
+            <div class="item-preview" style="background:linear-gradient(135deg,#4466ff,#8899ff)">🪸</div>
+            <span>Tube Coral</span>
+          </button>
+          <button class="item-card" data-type="anemone" data-category="coral">
+            <div class="item-preview" style="background:linear-gradient(135deg,#ff6644,#ff9977)">🌺</div>
+            <span>Anemone</span>
+          </button>
+          <button class="item-card" data-type="seagrass" data-category="coral">
+            <div class="item-preview" style="background:linear-gradient(135deg,#226622,#44aa44)">🌱</div>
+            <span>Sea Grass</span>
+          </button>
+          <button class="item-card" data-type="fanworm" data-category="coral">
+            <div class="item-preview" style="background:linear-gradient(135deg,#aa44cc,#cc88ee)">🌸</div>
+            <span>Fan Worm</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Decor Tab -->
+      <div class="tab-content" id="tab-decor">
+        <div class="items-grid">
+          <button class="item-card" data-type="rock" data-category="decor">
+            <div class="item-preview" style="background:linear-gradient(135deg,#666666,#999999)">🪨</div>
+            <span>Rock</span>
+          </button>
+          <button class="item-card" data-type="castle" data-category="decor">
+            <div class="item-preview" style="background:linear-gradient(135deg,#888888,#aaaaaa)">🏰</div>
+            <span>Castle</span>
+          </button>
+          <button class="item-card" data-type="chest" data-category="decor">
+            <div class="item-preview" style="background:linear-gradient(135deg,#884422,#cc8844)">💰</div>
+            <span>Chest</span>
+          </button>
+          <button class="item-card" data-type="driftwood" data-category="decor">
+            <div class="item-preview" style="background:linear-gradient(135deg,#5c3d1a,#8b5a2b)">🪵</div>
+            <span>Driftwood</span>
+          </button>
+          <button class="item-card" data-type="shipwreck" data-category="decor">
+            <div class="item-preview" style="background:linear-gradient(135deg,#4a3a2a,#7a6a5a)">⛵</div>
+            <span>Shipwreck</span>
+          </button>
+          <button class="item-card" data-type="arch" data-category="decor">
+            <div class="item-preview" style="background:linear-gradient(135deg,#aa8866,#ccaa88)">🌉</div>
+            <span>Arch</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="panel-hint">Click any item to add it to the tank</div>
+    </aside>
+  </div>
+
+  <!-- Bottom Selection Bar -->
+  <div id="selection-bar" class="selection-bar hidden">
+    <div class="selection-info">
+      <span class="selection-label">Selected:</span>
+      <span id="selection-name" class="selection-name">—</span>
+    </div>
+    <div class="selection-actions">
+      <button id="btn-rotate-left" class="btn btn-sm" title="Rotate Left">↺ Rotate</button>
+      <button id="btn-scale-up" class="btn btn-sm" title="Scale Up">＋ Scale</button>
+      <button id="btn-scale-down" class="btn btn-sm" title="Scale Down">－ Scale</button>
+      <button id="btn-remove" class="btn btn-sm btn-danger" title="Remove">🗑 Remove</button>
+      <button id="btn-deselect" class="btn btn-sm" title="Deselect">✕ Done</button>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
